@@ -16,7 +16,6 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -30,5 +29,6 @@ app.UseHttpsRedirection();
 app.MapGet("/hi", () => "hi");
 
 app.MapRecipesEndpoints();
+app.MapIngredientsEndpoints();
 app.Run();
 

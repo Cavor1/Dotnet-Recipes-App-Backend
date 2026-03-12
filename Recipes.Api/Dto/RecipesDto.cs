@@ -15,7 +15,8 @@ public class CreateRecipeDto
     [MinLength(1)]
     public string Title {get;set;} = "";
     public string? Description {get;set;}
-    public List<IngredientList>? RecipeIngredients {get;set;} = new();
+    [Required]
+    public List<IngredientList> RecipeIngredients {get;set;} = new();
 }
 public class IngredientList
 {

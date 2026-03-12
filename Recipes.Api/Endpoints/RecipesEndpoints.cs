@@ -58,22 +58,9 @@ public static class RecipesEndpoints
             Quantity = r.Quantity
         });
 
-        var existingIngredients = await db.Ingredients
-            .Where(ei => req.RecipeIngredients
-                .Select(ri => ri.Name.Trim().ToLower())
-                .Contains(ei.Name))
-            .ToDictionaryAsync(i => i.Name);
-
         //get existing ingredients
         //create and add nonexistent
         //create recipeingredients and add to database
-
-        var Ingredient = new Ingredient()
-        {
-            Id = Guid.NewGuid(),
-            Name = "test",
-
-        };
 
         var recipe = new Recipe()
         {
@@ -82,13 +69,42 @@ public static class RecipesEndpoints
             Description = req.Description
         };
 
-     
+        var existingIngredients = await db.Ingredients
+            .Where(ei => req.RecipeIngredients
+                .Select(ri => ri.Name.Trim().ToLower())
+                .Contains(ei.Name))
+            .ToDictionaryAsync(i => i.Name);
 
+        foreach (var reqIngredient in reqIngredients)
+        {
 
+            var recipeIngredient = new RecipeIngredient()
+            {
+                RecipeId = recipe.Id,
+                Quantity = reqIngredient.Quantity
+            };
+
+            if (!existingIngredients.ContainsKey(reqIngredient.Name))
+            {
+                var NewIngredient = new Ingredient()
+                {
+                    Id = Guid.NewGuid(),
+                    Name = reqIngredient.Name
+                };
+                db.Ingredients.Add(NewIngredient);
+                recipeIngredient.IngredientId = NewIngredient.Id;
+            }
+            else
+            {
+                recipeIngredient.IngredientId = existingIngredients[reqIngredient.Name].Id;
+            }
+            db.RecipeIngredients.Add(recipeIngredient);
+
+        }
 
         db.Recipes.Add(recipe);
         await db.SaveChangesAsync();
 
-        return Results.Created($"/recipes/{recipe.Id}", recipe);
+        return Results.Created($"/recipes/{recipe.Id}", new {Id = recipe.Id});//[TODO] can be better
     }
 }
