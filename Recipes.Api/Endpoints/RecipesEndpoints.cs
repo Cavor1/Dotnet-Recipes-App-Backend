@@ -23,9 +23,16 @@ public static class RecipesEndpoints
         {
             Id = r.Id,
             Title = r.Title,
-            Description = r.Description //?might be bad idea 
+            Description = r.Description, //?might be bad idea 
+            Ingredients = r.RecipeIngredients.Select(ri => new RecipeIngredientDto
+            {
+                IngredientID = ri.IngredientId,
+                Name = ri.Ingredient.Name,
+                Quantity = ri.Quantity
+            }).ToList()
         }).ToListAsync();
         return Results.Ok(recipes);
+
     }
     static async Task<IResult> GetRecipe(Guid id,AppDbContext db)
     {
@@ -54,7 +61,7 @@ public static class RecipesEndpoints
 
         var reqIngredients = req.RecipeIngredients.Select(r => new
         {
-            Name = r.Name,
+            Name = r.Name.Trim().ToLower(),
             Quantity = r.Quantity
         });
 
@@ -70,8 +77,8 @@ public static class RecipesEndpoints
         };
 
         var existingIngredients = await db.Ingredients
-            .Where(ei => req.RecipeIngredients
-                .Select(ri => ri.Name.Trim().ToLower())
+            .Where(ei => reqIngredients
+                .Select(ri => ri.Name)
                 .Contains(ei.Name))
             .ToDictionaryAsync(i => i.Name);
 
@@ -86,13 +93,13 @@ public static class RecipesEndpoints
 
             if (!existingIngredients.ContainsKey(reqIngredient.Name))
             {
-                var NewIngredient = new Ingredient()
+                var newIngredient = new Ingredient()
                 {
                     Id = Guid.NewGuid(),
                     Name = reqIngredient.Name
                 };
-                db.Ingredients.Add(NewIngredient);
-                recipeIngredient.IngredientId = NewIngredient.Id;
+                db.Ingredients.Add(newIngredient);
+                recipeIngredient.IngredientId = newIngredient.Id;
             }
             else
             {
