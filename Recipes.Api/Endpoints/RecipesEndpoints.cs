@@ -1,3 +1,4 @@
+using System.Net;
 using System.Reflection.Metadata;
 using Microsoft.EntityFrameworkCore;
 using Recipes.Api.Data;
@@ -14,16 +15,17 @@ public static class RecipesEndpoints
         app.MapGet("/recipes", GetRecipes);
         app.MapGet("/recipes/{id:guid}", GetRecipe);
         app.MapPost("/recipes", CreateRecipe);
-    //     app.MapPut("/recipes/{id:guid}", UpdateRecipe);
+        app.MapPut("/recipes/{id:guid}", UpdateRecipe);
     //     app.MapDelete("/recipes/{id:guid}", DeleteRecipe);
     }
+    //[TODO] is it problem to return descriptions of all recipes?
     static async Task<IResult> GetRecipes(AppDbContext db)
     {
         var recipes = await db.Recipes.Select(r => new RecipeDto()
         {
             Id = r.Id,
             Title = r.Title,
-            Description = r.Description, //?might be bad idea 
+            Description = r.Description, 
             Ingredients = r.RecipeIngredients.Select(ri => new RecipeIngredientDto
             {
                 IngredientID = ri.IngredientId,
@@ -36,17 +38,24 @@ public static class RecipesEndpoints
     }
     static async Task<IResult> GetRecipe(Guid id,AppDbContext db)
     {
-        var recipe = await db.Recipes.FindAsync(id);
+        var recipe = await db.Recipes.Where(r => r.Id == id).Select(r => new RecipeDto()
+            {
+                Id = r.Id,
+                Title = r.Title,
+                Description = r.Description,
+                Ingredients = r.RecipeIngredients.Select(ri => new RecipeIngredientDto
+                {
+                    IngredientID = ri.IngredientId,
+                    Name = ri.Ingredient.Name,
+                    Quantity = ri.Quantity
+                }).ToList()
+            }).FirstOrDefaultAsync();
         return recipe is null
             ? Results.NotFound()
-            : Results.Ok(new RecipeDto()
-            {
-                Id = recipe.Id,
-                Title = recipe.Title,
-                Description = recipe.Description
-            });
+            : Results.Ok(recipe);
     }
 
+    //[TODO]might have concurrency problems, between getting existing ingredients and saving new ingredients some time passes.
     static async Task<IResult> CreateRecipe(CreateRecipeDto req, AppDbContext db)
     {
     
@@ -63,7 +72,7 @@ public static class RecipesEndpoints
         {
             Name = r.Name.Trim().ToLower(),
             Quantity = r.Quantity
-        });
+        }).ToList();
 
         //get existing ingredients
         //create and add nonexistent
@@ -79,7 +88,7 @@ public static class RecipesEndpoints
         var existingIngredients = await db.Ingredients
             .Where(ei => reqIngredients
                 .Select(ri => ri.Name)
-                .Contains(ei.Name))
+                .Contains(ei.Name)) //list of reqIngredients.Name contains ei.Name
             .ToDictionaryAsync(i => i.Name);
 
         foreach (var reqIngredient in reqIngredients)
@@ -112,6 +121,11 @@ public static class RecipesEndpoints
         db.Recipes.Add(recipe);
         await db.SaveChangesAsync();
 
-        return Results.Created($"/recipes/{recipe.Id}", new {Id = recipe.Id});//[TODO] can be better
+        return Results.Created($"/recipes/{recipe.Id}", new {Id = recipe.Id});//[TODO] can retturn better response
+    }
+
+    static async Task<IResult> UpdateRecipe(CreateRecipeDto req,Guid id,AppDbContext db)
+    {
+        return Results.StatusCode(501);
     }
 }
