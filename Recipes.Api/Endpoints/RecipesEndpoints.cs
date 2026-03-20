@@ -1,3 +1,4 @@
+using System.Data.Common;
 using System.Net;
 using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -17,7 +18,7 @@ public static class RecipesEndpoints
         app.MapGet("/recipes/{id:guid}", GetRecipe);
         app.MapPost("/recipes", CreateRecipe);
         app.MapPut("/recipes/{id:guid}", UpdateRecipe);
-    //     app.MapDelete("/recipes/{id:guid}", DeleteRecipe);
+        app.MapDelete("/recipes/{id:guid}", DeleteRecipe);
     }
     //[TODO] is it problem to return descriptions of all recipes?
     static async Task<IResult> GetRecipes(AppDbContext db)
@@ -193,6 +194,8 @@ public static class RecipesEndpoints
         recipe.Description = req.Description;
 
 
+        //delete recipeingredients
+        //[TODO] ?delete only duplicates
         await db.RecipeIngredients.Where(ri => ri.RecipeId == id).ExecuteDeleteAsync();
 
         //add recipe ingredients and new ingredients
@@ -226,5 +229,19 @@ public static class RecipesEndpoints
 
 
         return Results.Ok();
+    }
+
+
+
+    static async Task<IResult> DeleteRecipe(Guid id,AppDbContext db)
+    {
+        var recipe = await db.Recipes.Where(r => r.Id == id).FirstOrDefaultAsync();
+        
+        if (recipe is null) return Results.NotFound();
+
+        db.Recipes.Remove(recipe);
+        await db.SaveChangesAsync();
+
+        return Results.Ok();   
     }
 }
