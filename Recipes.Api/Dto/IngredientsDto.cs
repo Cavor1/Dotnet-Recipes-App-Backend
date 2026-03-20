@@ -7,6 +7,8 @@ public class IngredientDto
     [Required]
     [MinLength(1)]
     public string Name {get;set;} = "";
+
+    public double? Kcal100g {get;set;}
 }
 
 public class CreateIngredientDto
@@ -15,4 +17,5 @@ public class CreateIngredientDto
     [Required]
     [MinLength(1)]
     public string Name {get;set;} = "";
+    public double? Kcal100g {get;set;}
 }

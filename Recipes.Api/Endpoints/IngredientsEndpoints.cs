@@ -14,8 +14,8 @@ public static class IngredientsEndpoints
         app.MapGet("/ingredients", GetIngredients);
         app.MapGet("/ingredients/{id:guid}", GetIngredient);
         app.MapPost("/ingredients", CreateIngredient);
-    //     app.MapPut("/recipes/{id:guid}", UpdateRecipe);
-    //     app.MapDelete("/recipes/{id:guid}", DeleteRecipe);
+        app.MapPut("/ingredients/{id:guid}", UpdateIngredient);
+        app.MapDelete("/ingredients/{id:guid}", DeleteIngredient);
     }
     static async Task<IResult> GetIngredients(AppDbContext db)
     {
@@ -28,10 +28,31 @@ public static class IngredientsEndpoints
     }
     static async Task<IResult> GetIngredient(Guid id,AppDbContext db)
     {
-        return Results.Ok();
+        var ingredient = await db.Ingredients.Where(i => i.Id == id).Select(i => new IngredientDto
+        {
+            Id = i.Id,
+            Name = i.Name,
+            Kcal100g = i.Kcal100g
+
+        }).FirstOrDefaultAsync();
+
+        
+        return ingredient is null
+            ? Results.NotFound()
+            : Results.Ok(ingredient);
     }
 
     static async Task<IResult> CreateIngredient(CreateIngredientDto req, AppDbContext db)
+    {
+
+        return Results.Ok();
+    }
+    static async Task<IResult> UpdateIngredient(CreateIngredientDto req, AppDbContext db)
+    {
+
+        return Results.Ok();
+    }
+    static async Task<IResult> DeleteIngredient(CreateIngredientDto req, AppDbContext db)
     {
 
         return Results.Ok();
