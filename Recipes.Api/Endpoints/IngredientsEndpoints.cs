@@ -45,16 +45,55 @@ public static class IngredientsEndpoints
     static async Task<IResult> CreateIngredient(CreateIngredientDto req, AppDbContext db)
     {
 
-        return Results.Ok();
+        var reqValidation = req.Validate();
+        if (reqValidation is not null) return reqValidation;
+
+
+        var ingredient = new Ingredient
+        {
+          Id = Guid.NewGuid(),
+          Name = req.Name.Trim().ToLowerInvariant(),
+          Kcal100g = req.Kcal100g
+
+        };
+        db.Ingredients.Add(ingredient);
+
+        //error if unique constrait on name violated
+        try
+        {
+            await db.SaveChangesAsync();
+
+        }
+        catch(DbUpdateException)
+        {
+            return Results.BadRequest();
+        }
+            
+        return Results.Created($"/ingredients/{ingredient.Id}", new {Id = ingredient.Id});
     }
-    static async Task<IResult> UpdateIngredient(CreateIngredientDto req, AppDbContext db)
+    static async Task<IResult> UpdateIngredient(Guid id, CreateIngredientDto req, AppDbContext db)
     {
 
         return Results.Ok();
     }
-    static async Task<IResult> DeleteIngredient(CreateIngredientDto req, AppDbContext db)
+    static async Task<IResult> DeleteIngredient(Guid id, AppDbContext db)
     {
+        var ingredient = await db.Ingredients.Where(i => i.Id == id).FirstOrDefaultAsync();
+        
+        if (ingredient is null) return Results.NotFound();
 
-        return Results.Ok();
+        var isUsed = await db.RecipeIngredients
+    .AnyAsync(ri => ri.IngredientId == id);
+
+        if(isUsed) return Results.Conflict(new
+        {
+            message = "INgredient is used by recipe"
+        });
+
+        db.Ingredients.Remove(ingredient);
+
+        await db.SaveChangesAsync();
+
+        return Results.Ok();   
     }
 }
