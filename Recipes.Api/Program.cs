@@ -31,5 +31,3 @@ app.MapGet("/hi", () => "hi");
 app.MapRecipesEndpoints();
 app.MapIngredientsEndpoints();
 app.Run();
-
-public partial class Program {}

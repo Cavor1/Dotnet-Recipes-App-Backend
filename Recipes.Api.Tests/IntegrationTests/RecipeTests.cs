@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using Recipes.Api.Dto;
 namespace Recipes.Api.Tests;
 
 public class RecipeTests : IClassFixture<CustomWebApplicationFactory>
@@ -14,13 +15,18 @@ public class RecipeTests : IClassFixture<CustomWebApplicationFactory>
     [Fact]
     public async Task CreateRecipe_ReturnsCreated()
     {
-        var request = new
+        var request = new RecipeDto
         {
             Title = "Test recipe",
             Description = "Test",
-            RecipeIngredients = new[]
+            Ingredients = new List<RecipeIngredientDto>
             {
-                new { Name = "Sugar", Quantity = "100g" }
+                new RecipeIngredientDto
+                {
+                    Name = "Sugar",
+                    Quantity = "100g"
+                }
+
             }
         };
 
