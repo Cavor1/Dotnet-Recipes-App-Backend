@@ -19,7 +19,7 @@ namespace Recipes.Api.Tests;
 
 public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
-    private DbConnection _connection = null!;
+    private DbConnection? _connection;
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
