@@ -32,3 +32,4 @@ app.MapRecipesEndpoints();
 app.MapIngredientsEndpoints();
 app.Run();
 
+public partial class Program {}
