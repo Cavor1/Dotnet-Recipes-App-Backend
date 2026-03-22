@@ -1,4 +1,5 @@
 using System.Reflection.Metadata;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Recipes.Api.Data;
 using Recipes.Api.Dto;
@@ -73,8 +74,24 @@ public static class IngredientsEndpoints
     }
     static async Task<IResult> UpdateIngredient(Guid id, CreateIngredientDto req, AppDbContext db)
     {
+        var reqValidation = req.Validate();
+        if (reqValidation is not null) return reqValidation;
 
-        return Results.Ok();
+        var ingredient = await db.Ingredients.Where(i => i.Id == id).FirstOrDefaultAsync();
+        if (ingredient is null) return Results.NotFound();
+
+        ingredient.Name = req.Name.Trim().ToLowerInvariant();
+        ingredient.Kcal100g = req.Kcal100g;
+
+        try
+        {
+            await db.SaveChangesAsync();
+            return Results.Ok();
+        }
+        catch (DbUpdateException)
+        {
+            return Results.Conflict("ingredient name already exist");   
+        }
     }
     static async Task<IResult> DeleteIngredient(Guid id, AppDbContext db)
     {
