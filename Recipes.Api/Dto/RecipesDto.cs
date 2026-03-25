@@ -6,6 +6,7 @@ public class RecipeDto
     public Guid Id {get;set;}
     public string Title {get;set;} = "";
     public string? Description {get;set;}
+    public double? Kcal {get;set;}
     public List<RecipeIngredientDto> Ingredients {get;set;} = new();
 }
 
@@ -25,7 +26,7 @@ public class RecipeIngredientDto
     [Required]
     [MinLength(1)]
     public string Name {get;set;} = "";
-    public string? Quantity {get;set;}
+    public double? Gram {get;set;}
 }
 
 public class CreateRecipeIngredientDto
@@ -33,5 +34,5 @@ public class CreateRecipeIngredientDto
     [Required]
     [MinLength(1)]
     public string Name {get;set;} = "";
-    public string? Quantity {get;set;}
+    public double? Gram {get;set;}
 }

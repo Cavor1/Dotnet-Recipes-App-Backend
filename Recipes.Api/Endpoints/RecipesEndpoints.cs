@@ -28,11 +28,12 @@ public static class RecipesEndpoints
             Id = r.Id,
             Title = r.Title,
             Description = r.Description, 
+            Kcal = r.RecipeIngredients.Sum(ri => ri.Gram*ri.Ingredient.Kcal100g/100) ?? 0,
             Ingredients = r.RecipeIngredients.Select(ri => new RecipeIngredientDto
             {
                 IngredientID = ri.IngredientId,
                 Name = ri.Ingredient.Name,
-                Quantity = ri.Quantity
+                Gram = ri.Gram
             }).ToList()
         }).ToListAsync();
         return Results.Ok(recipes);
@@ -49,7 +50,7 @@ public static class RecipesEndpoints
                 {
                     IngredientID = ri.IngredientId,
                     Name = ri.Ingredient.Name,
-                    Quantity = ri.Quantity
+                    Gram = ri.Gram
                 }).ToList()
             }).FirstOrDefaultAsync();
         return recipe is null
@@ -74,7 +75,7 @@ public static class RecipesEndpoints
         var reqIngredients = req.RecipeIngredients.Select(r => new
         {
             Name = r.Name.Trim().ToLowerInvariant(),
-            Quantity = r.Quantity
+            Gram = r.Gram
         }).ToList();
 
         //check for duplicates, is there are, bad request
@@ -116,7 +117,7 @@ public static class RecipesEndpoints
             var recipeIngredient = new RecipeIngredient()
             {
                 RecipeId = recipe.Id,
-                Quantity = reqIngredient.Quantity
+                Gram = reqIngredient.Gram
             };
 
             if (!existingIngredients.ContainsKey(reqIngredient.Name))
@@ -163,7 +164,7 @@ public static class RecipesEndpoints
         var reqIngredients = req.RecipeIngredients.Select(r => new
         {
             Name = r.Name.Trim().ToLowerInvariant(),
-            Quantity = r.Quantity
+            Gram = r.Gram
         }).ToList();
 
         //check for duplicates, is there are, bad request
@@ -205,7 +206,7 @@ public static class RecipesEndpoints
             var recipeIngredient = new RecipeIngredient()
             {
                 RecipeId = recipe.Id,
-                Quantity = reqIngredient.Quantity
+                Gram = reqIngredient.Gram
             };
 
             if (!existingIngredients.ContainsKey(reqIngredient.Name))

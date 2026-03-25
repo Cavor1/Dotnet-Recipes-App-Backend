@@ -1,64 +1,142 @@
 using System.Net;
 using System.Net.Http.Json;
 using Recipes.Api.Dto;
+using Recipes.Api.Data;
+using Recipes.Api.Entities;
+using Microsoft.Extensions.DependencyInjection;
 namespace Recipes.Api.Tests;
 
-// public class RecipeTests : IClassFixture<CustomWebApplicationFactory>
-// {
-//     private readonly HttpClient _client;
 
-//     public RecipeTests(CustomWebApplicationFactory factory)
-//     {
-//         _client = factory.CreateClient();
-//     }
-
-//     [Fact]
-//     public async Task CreateRecipe_ReturnsCreated()
-//     {
-//         var request = new CreateRecipeDto
-//         {
-//             Title = "Test recipe",
-//             Description = "Test",
-//             RecipeIngredients = new List<CreateRecipeIngredientDto>
-//             {
-//                 new CreateRecipeIngredientDto
-//                 {
-//                     Name = "Sugar",
-//                     Quantity = "100g"
-//                 }
-
-//             }
-//         };
-
-//         var response = await _client.PostAsJsonAsync("/recipes", request);
-
-//         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-//     }
-// }
-public class CreateRecipeTests
+public class RecipeTests
 {
-[Fact]
-public async Task CreateRecipe_ReturnsCreated()
-{
-    using var factory = new CustomWebApplicationFactory();
-    using var client = factory.CreateClient();
-
-    var request = new CreateRecipeDto
+    [Fact]
+    public async Task CreateRecipe_ReturnsCreated()
     {
-        Title = "Test recipe",
-        Description = "Test",
-        RecipeIngredients = new List<CreateRecipeIngredientDto>
+        using var factory = new CustomWebApplicationFactory();
+        using var client = factory.CreateClient();
+
+
+        var request = new CreateRecipeDto
         {
-            new CreateRecipeIngredientDto
+            Title = "Test recipe",
+            Description = "Test",
+            RecipeIngredients = new List<CreateRecipeIngredientDto>
             {
-                Name = "Sugar",
-                Quantity = "100g"
+                new CreateRecipeIngredientDto
+                {
+                    Name = "Sugar",
+                    Gram = 100
+                }
             }
+        };
+
+        var response = await client.PostAsJsonAsync("/recipes", request);
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetRecipes_EmptyRecipe_HasZeroKcal()
+    {
+        using var factory = new CustomWebApplicationFactory();
+
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            db.Recipes.Add(new Recipe
+            {
+                Id = Guid.NewGuid(),
+                Title = "Empty",
+                Description = "No ingredients"
+            });
+
+
+            await db.SaveChangesAsync();
         }
-    };
 
-    var response = await client.PostAsJsonAsync("/recipes", request);
+        using var client = factory.CreateClient();
 
-    Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-}
+        var recipes = await client.GetFromJsonAsync<List<RecipeDto>>("/recipes");
+
+        Assert.NotNull(recipes);
+        Assert.Single(recipes);
+        Assert.Equal(0, recipes[0].Kcal);
+    }
+    [Fact]
+    public async Task GetRecipes_IngredientNoKcal_HasZeroKcal()
+    {
+        using var factory = new CustomWebApplicationFactory();
+
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var recipe = new Recipe
+            {
+                Id = Guid.NewGuid(),
+                Title = "Empty",
+                Description = "No ingredients"
+            };
+            var ingredient = new Ingredient
+            {
+                Id = Guid.NewGuid(),
+                Name = "NoKcal"
+            };
+            db.Recipes.Add(recipe);
+            db.Ingredients.Add(ingredient);
+            db.RecipeIngredients.Add(new RecipeIngredient
+            {
+                RecipeId = recipe.Id,
+                IngredientId = ingredient.Id,
+                Gram = 100
+            });
+            await db.SaveChangesAsync();
+        }
+
+        using var client = factory.CreateClient();
+
+        var recipes = await client.GetFromJsonAsync<List<RecipeDto>>("/recipes");
+
+        Assert.NotNull(recipes);
+        Assert.Single(recipes);
+        Assert.Equal(0, recipes[0].Kcal);
+    }
+    [Fact]
+    public async Task GetRecipes_IngredientHasKcal_HasSumKcal()
+    {
+        using var factory = new CustomWebApplicationFactory();
+
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var recipe = new Recipe
+            {
+                Id = Guid.NewGuid(),
+                Title = "recipe",
+                Description = ""
+            };
+            var ingredient = new Ingredient
+            {
+                Id = Guid.NewGuid(),
+                Name = "name",
+                Kcal100g = 100,
+            };
+            db.Recipes.Add(recipe);
+            db.Ingredients.Add(ingredient);
+            db.RecipeIngredients.Add(new RecipeIngredient
+            {
+                RecipeId = recipe.Id,
+                IngredientId = ingredient.Id,
+                Gram = 100
+            });
+            await db.SaveChangesAsync();
+        }
+
+        using var client = factory.CreateClient();
+
+        var recipes = await client.GetFromJsonAsync<List<RecipeDto>>("/recipes");
+
+        Assert.NotNull(recipes);
+        Assert.Single(recipes);
+        Assert.Equal(100, recipes[0].Kcal);
+    }
 }
