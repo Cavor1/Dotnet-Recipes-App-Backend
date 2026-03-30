@@ -26,7 +26,7 @@ public static class RecipesEndpoints
         var recipes = await db.Recipes.Select(r => new RecipeDto()
         {
             Id = r.Id,
-            Title = r.Title,
+            Name= r.Name,
             Description = r.Description, 
             Kcal = r.RecipeIngredients.Sum(ri => ri.Gram*ri.Ingredient.Kcal100g/100) ?? 0,
             Ingredients = r.RecipeIngredients.Select(ri => new RecipeIngredientDto
@@ -44,7 +44,7 @@ public static class RecipesEndpoints
         var recipe = await db.Recipes.Where(r => r.Id == id).Select(r => new RecipeDto()
             {
                 Id = r.Id,
-                Title = r.Title,
+                Name= r.Name,
                 Description = r.Description,
                 Ingredients = r.RecipeIngredients.Select(ri => new RecipeIngredientDto
                 {
@@ -101,7 +101,7 @@ public static class RecipesEndpoints
         var recipe = new Recipe()
         {
             Id = Guid.NewGuid(),
-            Title = req.Title,
+            Name= req.Name,
             Description = req.Description
         };
 
@@ -191,7 +191,7 @@ public static class RecipesEndpoints
             .ToDictionaryAsync(i => i.Name);      
 
         //set new name and description of recipe
-        recipe.Title = req.Title;
+        recipe.Name= req.Name;
         recipe.Description = req.Description;
 
 

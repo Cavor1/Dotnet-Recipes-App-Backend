@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 public class RecipeDto
 {
     public Guid Id {get;set;}
-    public string Title {get;set;} = "";
+    public string Name{get;set;} = "";
     public string? Description {get;set;}
     public double? Kcal {get;set;}
     public List<RecipeIngredientDto> Ingredients {get;set;} = new();
@@ -14,7 +14,7 @@ public class CreateRecipeDto
 {
     [Required]
     [MinLength(1)]
-    public string Title {get;set;} = "";
+    public string Name{get;set;} = "";
     public string? Description {get;set;}
     [Required]
     public List<CreateRecipeIngredientDto> RecipeIngredients {get;set;} = new();

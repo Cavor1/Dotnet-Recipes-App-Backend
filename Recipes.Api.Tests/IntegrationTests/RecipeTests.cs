@@ -18,7 +18,7 @@ public class RecipeTests
 
         var request = new CreateRecipeDto
         {
-            Title = "Test recipe",
+            Name= "Test recipe",
             Description = "Test",
             RecipeIngredients = new List<CreateRecipeIngredientDto>
             {
@@ -46,7 +46,7 @@ public class RecipeTests
             db.Recipes.Add(new Recipe
             {
                 Id = Guid.NewGuid(),
-                Title = "Empty",
+                Name= "Empty",
                 Description = "No ingredients"
             });
 
@@ -73,7 +73,7 @@ public class RecipeTests
             var recipe = new Recipe
             {
                 Id = Guid.NewGuid(),
-                Title = "Empty",
+                Name= "Empty",
                 Description = "No ingredients"
             };
             var ingredient = new Ingredient
@@ -111,7 +111,7 @@ public class RecipeTests
             var recipe = new Recipe
             {
                 Id = Guid.NewGuid(),
-                Title = "recipe",
+                Name= "recipe",
                 Description = ""
             };
             var ingredient = new Ingredient
