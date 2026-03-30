@@ -75,7 +75,8 @@ public static class RecipesEndpoints
         var reqIngredients = req.RecipeIngredients.Select(r => new
         {
             Name = r.Name.Trim().ToLowerInvariant(),
-            Gram = r.Gram
+            Gram = r.Gram,
+            Kcal100g = r.Kcal100g
         }).ToList();
 
         //check for duplicates, is there are, bad request
@@ -125,7 +126,8 @@ public static class RecipesEndpoints
                 var newIngredient = new Ingredient()
                 {
                     Id = Guid.NewGuid(),
-                    Name = reqIngredient.Name
+                    Name = reqIngredient.Name,
+                    Kcal100g = reqIngredient.Kcal100g
                 };
                 db.Ingredients.Add(newIngredient);
                 recipeIngredient.IngredientId = newIngredient.Id;

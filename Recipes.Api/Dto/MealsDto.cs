@@ -1,25 +1,23 @@
 namespace Recipes.Api.Dto;
 using System.ComponentModel.DataAnnotations;
 
-public class RecipeDto
+public class MealDto
 {
     public Guid Id {get;set;}
     public string Name{get;set;} = "";
-    public string? Description {get;set;}
-    public double? Kcal {get;set;}
-    public List<RecipeIngredientDto> Ingredients {get;set;} = new();
+    public List<MealIngredientDto> Ingredients {get;set;} = new();
 }
 
-public class CreateRecipeDto
+public class CreateMealDto
 {
     [Required]
     [MinLength(1)]
     public string Name{get;set;} = "";
     public string? Description {get;set;}
     [Required]
-    public List<CreateRecipeIngredientDto> RecipeIngredients {get;set;} = new();
+    public List<CreateMealIngredientDto> MealIngredients {get;set;} = new();
 }
-public class RecipeIngredientDto
+public class MealIngredientDto
 {
 
     public Guid IngredientID {get;set;}
@@ -27,14 +25,14 @@ public class RecipeIngredientDto
     [MinLength(1)]
     public string Name {get;set;} = "";
     public double? Gram {get;set;}
+    public double? Kcal100g {get;set;}
+
 }
 
-public class CreateRecipeIngredientDto
+public class CreateMealIngredientDto
 {
     [Required]
     [MinLength(1)]
     public string Name {get;set;} = "";
     public double? Gram {get;set;}
-    public double? Kcal100g {get;set;}
-
 }
