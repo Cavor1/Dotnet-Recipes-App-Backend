@@ -29,8 +29,9 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 
-app.MapGet("/hi", () => "hi");
+app.MapGet("/", () => "hi");
 
 app.MapRecipesEndpoints();
 app.MapIngredientsEndpoints();
+app.MapMealsEndpoints();
 app.Run();

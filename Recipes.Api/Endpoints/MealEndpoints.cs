@@ -12,17 +12,32 @@ namespace Recipes.Api.Endpoints;
 
 public static class MealEndpoints
 {
-    public static void MapRecipesEndpoints(this WebApplication app)
+    public static void MapMealsEndpoints(this WebApplication app)
     {
-        app.MapGet("/recipes", GetMeals);
-        app.MapGet("/recipes/{id:guid}", GetMeal);
-        app.MapPost("/recipes", CreateMeal);
-        app.MapPut("/recipes/{id:guid}", UpdateMeal);
-        app.MapDelete("/recipes/{id:guid}", DeleteMeal);
+        app.MapGet("/meals", GetMeals);
+        app.MapGet("/meals/{id:guid}", GetMeal);
+        app.MapPost("/meals", CreateMeal);
+        app.MapPut("/meals/{id:guid}", UpdateMeal);
+        app.MapDelete("/meals/{id:guid}", DeleteMeal);
     }
-    static async Task<IResult> GetMeals(AppDbContext db)
+    static async Task<IResult> GetMeals(AppDbContext db) //query params
     {
-        return Results.StatusCode(501);
+        var meals = await db.Meals.Select(r => new MealDto()
+        {
+            Id = r.Id,
+            Name= r.Name,
+            RecipeId = r.RecipeId,
+            EatenTime = r.EatenTime,
+            Kcal = r.Kcal ?? r.MealIngredients.Sum(ri => ri.Gram*ri.Ingredient.Kcal100g/100) ?? 0,
+            Ingredients = r.MealIngredients.Select(ri => new MealIngredientDto
+            {
+                IngredientID = ri.IngredientId,
+                Name = ri.Ingredient.Name,
+                Gram = ri.Gram
+            }).ToList()
+        }).ToListAsync();
+        return Results.Ok(meals);
+
     }
     static async Task<IResult> GetMeal(Guid id,AppDbContext db)
     {

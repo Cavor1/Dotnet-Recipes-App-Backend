@@ -4,8 +4,13 @@ using System.ComponentModel.DataAnnotations;
 public class MealDto
 {
     public Guid Id {get;set;}
+    public Guid? RecipeId {get;set;}
+    public double? Kcal {get;set;}
     public string Name{get;set;} = "";
+    public DateTime? EatenTime {get;set;} 
+
     public List<MealIngredientDto> Ingredients {get;set;} = new();
+
 }
 
 public class CreateMealDto
