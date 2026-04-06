@@ -19,6 +19,8 @@ public class CreateMealDto
     [MinLength(1)]
     public string Name{get;set;} = "";
     public string? Description {get;set;}
+    public double? Kcal {get;set;}
+    public Guid? RecipeID {get;set;}
     [Required]
     public List<CreateMealIngredientDto> MealIngredients {get;set;} = new();
 }
@@ -40,4 +42,5 @@ public class CreateMealIngredientDto
     [MinLength(1)]
     public string Name {get;set;} = "";
     public double? Gram {get;set;}
+    public double? Kcal100g {get;set;}
 }

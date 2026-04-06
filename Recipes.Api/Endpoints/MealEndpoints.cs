@@ -43,9 +43,93 @@ public static class MealEndpoints
     {
         return Results.StatusCode(501);
     }
-    static async Task<IResult> CreateMeal(AppDbContext db)
+    static async Task<IResult> CreateMeal(CreateMealDto req, AppDbContext db)
     {
-        return Results.StatusCode(501);
+        
+        //validation
+        var reqValidation = req.Validate();
+        if (reqValidation is not null) return reqValidation;
+
+        foreach (var ri in req.MealIngredients)
+        {
+            var riValidation = ri.Validate();
+            if (riValidation is not null) return riValidation;
+        }
+
+        var reqIngredients = req.MealIngredients.Select(r => new
+        {
+            Name = r.Name.Trim().ToLowerInvariant(),
+            Gram = r.Gram,
+            Kcal100g = r.Kcal100g
+        }).ToList();
+
+        //check for duplicates, is there are, bad request
+        var duplicateNames = reqIngredients
+            .GroupBy(x => x.Name)
+            .Where(g => g.Count() > 1)
+            .Select(g => g.Key)
+            .ToList();
+
+        if (duplicateNames.Count > 0)
+        {
+            return Results.BadRequest(new
+            {
+                Error = "Duplicate ingredient names in request",
+                Ingredients = duplicateNames
+            });
+        }
+
+        var meal = new Meal()
+        {
+            Id = Guid.NewGuid(),
+            Name= req.Name,
+            Kcal = req.Kcal,
+            RecipeId = req.RecipeId
+        };
+
+        var existingIngredients = await db.Ingredients
+            .Where(ei => reqIngredients
+                .Select(ri => ri.Name)
+                .Contains(ei.Name)) //list of reqIngredients.Name contains ei.Name
+            .ToDictionaryAsync(i => i.Name);
+
+        foreach (var reqIngredient in reqIngredients)
+        {
+
+            var mealIngredient = new MealIngredient()
+            {
+                MealId = meal.Id,
+                Gram = reqIngredient.Gram
+            };
+
+            if (!existingIngredients.ContainsKey(reqIngredient.Name))
+            {
+                var newIngredient = new Ingredient()
+                {
+                    Id = Guid.NewGuid(),
+                    Name = reqIngredient.Name,
+                    Kcal100g = reqIngredient.Kcal100g
+                };
+                db.Ingredients.Add(newIngredient);
+                mealIngredient.IngredientId = newIngredient.Id;
+            }
+            else
+            {
+                mealIngredient.IngredientId = existingIngredients[reqIngredient.Name].Id;
+            }
+            db.MealIngredients.Add(mealIngredient);
+
+        }
+
+        if(meal.Kcal is null)
+        {
+            meal.Kcal = meal.MealIngredients.Sum(ri => ri.Gram*ri.Ingredient.Kcal100g/100);
+        }
+
+        db.Meals.Add(meal);
+        await db.SaveChangesAsync();
+
+        return Results.Created($"/recipes/{meal.Id}", new {Id = meal.Id});//[TODO] can retturn better response
     }
     static async Task<IResult> DeleteMeal(Guid id,AppDbContext db)
     {
