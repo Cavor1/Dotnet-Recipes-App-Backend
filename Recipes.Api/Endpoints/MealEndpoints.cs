@@ -28,7 +28,7 @@ public static class MealEndpoints
             Name= r.Name,
             RecipeId = r.RecipeId,
             EatenTime = r.EatenTime,
-            Kcal = r.Kcal ?? r.MealIngredients.Sum(ri => ri.Gram*ri.Ingredient.Kcal100g/100) ?? 0,
+            Kcal = r.MealIngredients.Sum(ri => ri.Gram*ri.Ingredient.Kcal100g/100) ?? 0,
             Ingredients = r.MealIngredients.Select(ri => new MealIngredientDto
             {
                 IngredientID = ri.IngredientId,
@@ -83,7 +83,6 @@ public static class MealEndpoints
         {
             Id = Guid.NewGuid(),
             Name= req.Name,
-            Kcal = req.Kcal,
             RecipeId = req.RecipeId
         };
 
@@ -119,11 +118,6 @@ public static class MealEndpoints
             }
             db.MealIngredients.Add(mealIngredient);
 
-        }
-
-        if(meal.Kcal is null)
-        {
-            meal.Kcal = meal.MealIngredients.Sum(ri => ri.Gram*ri.Ingredient.Kcal100g/100);
         }
 
         db.Meals.Add(meal);

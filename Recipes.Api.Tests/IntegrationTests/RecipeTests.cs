@@ -39,7 +39,6 @@ public class RecipeTests
     public async Task GetRecipes_EmptyRecipe_HasZeroKcal()
     {
         using var factory = new CustomWebApplicationFactory();
-
         using (var scope = factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();

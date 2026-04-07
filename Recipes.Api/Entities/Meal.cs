@@ -7,7 +7,6 @@ public class Meal
     public DateTime? EatenTime {get;set;}
     //public DateTime? CreatedTime {get;set;}
     public Guid? RecipeId {get;set;}
-    public double? Kcal {get;set;} //to increase speed of retrieval, 
     public List<MealIngredient> MealIngredients {get;set;} = new();
 
 }

@@ -18,12 +18,19 @@ public class CreateMealDto
     [Required]
     [MinLength(1)]
     public string Name{get;set;} = "";
-    public string? Description {get;set;}
-    public double? Kcal {get;set;}
-    public Guid? RecipeID {get;set;}
+    public Guid? RecipeId {get;set;}
     [Required]
     public List<CreateMealIngredientDto> MealIngredients {get;set;} = new();
 }
+public class CreateMealIngredientDto
+{
+    [Required]
+    [MinLength(1)]
+    public string Name {get;set;} = "";
+    public double? Gram {get;set;}
+    public double? Kcal100g {get;set;}
+}
+
 public class MealIngredientDto
 {
 
@@ -34,13 +41,4 @@ public class MealIngredientDto
     public double? Gram {get;set;}
     public double? Kcal100g {get;set;}
 
-}
-
-public class CreateMealIngredientDto
-{
-    [Required]
-    [MinLength(1)]
-    public string Name {get;set;} = "";
-    public double? Gram {get;set;}
-    public double? Kcal100g {get;set;}
 }
