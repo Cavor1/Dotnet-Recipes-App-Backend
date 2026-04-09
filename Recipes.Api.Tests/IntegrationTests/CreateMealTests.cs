@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Recipes.Api.Tests;
 
 
-public class MealTests
+public class CreateMealTests
 {
 [Fact]
     public async Task CreateMeal_WithIngredients_ReturnsCreated()
