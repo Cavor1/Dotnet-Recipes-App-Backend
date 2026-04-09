@@ -2,6 +2,7 @@ using System.Data.Common;
 using System.Net;
 using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Recipes.Api.Data;
 using Recipes.Api.Dto;
@@ -22,9 +23,27 @@ public static class MealEndpoints
         app.MapPatch("/meals/{id:guid}/eat",EatMeal);
         app.MapPatch("/meals/{id:guid}/undoeat",UndoEatMeal);
     }
-    static async Task<IResult> GetMeals(AppDbContext db) //query params
+    static async Task<IResult> GetMeals([AsParameters] GetMealQueryDto q, AppDbContext db) //query params
     {
-        var meals = await db.Meals.Select(r => new MealDto()
+        var query = db.Meals.AsQueryable();
+        if (q.From.HasValue)
+        {
+            query = query.Where(m => m.EatenTime >= q.From && m.EatenTime != null);
+        }
+        if (q.To.HasValue)
+        {
+            query = query.Where(m => m.EatenTime <= q.To && m.EatenTime != null);
+        }
+        if (q.Eaten == false)
+        {
+            query = query.Where(m => m.EatenTime == null);
+        }
+        if (q.Eaten == true)
+        {
+            query = query.Where(m => m.EatenTime != null);
+        }
+
+        var meals = await query.Select(r => new MealDto()
         {
             Id = r.Id,
             Name= r.Name,
@@ -238,7 +257,6 @@ public static class MealEndpoints
 
         }
 
-        db.Meals.Add(meal);
         await db.SaveChangesAsync();
 
         return Results.Created($"/recipes/{meal.Id}", new {Id = meal.Id});//[TODO] can retturn better response

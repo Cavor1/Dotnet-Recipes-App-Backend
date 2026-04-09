@@ -4,6 +4,7 @@ using Recipes.Api.Dto;
 using Recipes.Api.Data;
 using Recipes.Api.Entities;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
 namespace Recipes.Api.Tests;
 
 
@@ -39,12 +40,12 @@ public class UpdateMealTests
         }
 
         using var client = factory.CreateClient();
-        await client.PutAsJsonAsync($"/meals/{mealId}", new MealDto
+        await client.PutAsJsonAsync($"/meals/{mealId}", new CreateMealDto
         {
             Name = "name2",
-            Ingredients = new List<MealIngredientDto>()
+            MealIngredients = new List<CreateMealIngredientDto>()
             {
-                new MealIngredientDto
+                new CreateMealIngredientDto
                 {
                     Name = "i",
                     Gram = 100
@@ -56,7 +57,16 @@ public class UpdateMealTests
         using (var scope = factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            var meal = await db.Meals.FindAsync(mealId);
+            var meal = await db.Meals
+                .Include(m => m.MealIngredients)
+                .SingleAsync(m => m.Id == mealId);
+
+            Console.WriteLine($"Meal: {meal.Name} ({meal.Id})");
+
+            foreach (var mi in meal.MealIngredients)
+            {
+                Console.WriteLine($" - Ingredient: {mi.Ingredient?.Name}, Gram: {mi.Gram}, IngredientId: {mi.IngredientId}");
+            }
 
             Assert.NotNull(meal);
             Assert.Equal("name2",meal.Name);

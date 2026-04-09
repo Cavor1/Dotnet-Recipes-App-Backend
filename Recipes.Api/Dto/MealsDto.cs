@@ -42,3 +42,10 @@ public class MealIngredientDto
     public double? Kcal100g {get;set;}
 
 }
+
+public class GetMealQueryDto
+{
+    public DateTime? From {get;set;}
+    public DateTime? To {get;set;}
+    public bool? Eaten {get;set;}
+}
