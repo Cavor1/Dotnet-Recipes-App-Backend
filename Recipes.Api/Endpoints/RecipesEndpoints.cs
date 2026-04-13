@@ -21,9 +21,24 @@ public static class RecipesEndpoints
         app.MapDelete("/recipes/{id:guid}", DeleteRecipe);
     }
     //[TODO] is it problem to return descriptions of all recipes?
-    static async Task<IResult> GetRecipes(AppDbContext db)
+    static async Task<IResult> GetRecipes([AsParameters] GetRecipesQueryDto req, AppDbContext db)
     {
-        var recipes = await db.Recipes.Select(r => new RecipeDto()
+
+        var page = req.Page ?? 1;
+        var pageSize = req.PageSize ?? 20;
+        
+        var reqValidation = req.Validate();
+        if (reqValidation is not null) return reqValidation;
+ 
+        var query = db.Recipes.AsQueryable();
+        if (req.searchString != null)
+        {
+           query = query.Where(r => r.Name.ToLower().Contains(req.searchString));
+        }
+        var totalCount = await db.Recipes.CountAsync();
+
+
+        var recipes = await query.OrderBy(m => m.Name).Skip((page-1)*pageSize).Take(pageSize).Select(r => new RecipeDto()
         {
             Id = r.Id,
             Name= r.Name,
@@ -36,7 +51,17 @@ public static class RecipesEndpoints
                 Gram = ri.Gram
             }).ToList()
         }).ToListAsync();
-        return Results.Ok(recipes);
+        return Results.Ok(new PagedResponseDto<RecipeDto>
+        {
+            Items = recipes,
+            Metadata =new PageMetadataDto
+            {
+                Page = page,
+                PageSize = pageSize,
+                TotalCount = totalCount,
+                TotalPages = (int)Math.Ceiling((double)totalCount/pageSize)
+            }
+        });
 
     }
     static async Task<IResult> GetRecipe(Guid id,AppDbContext db)

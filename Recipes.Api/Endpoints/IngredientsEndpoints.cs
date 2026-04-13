@@ -24,6 +24,7 @@ public static class IngredientsEndpoints
         {
             Id = r.Id,
             Name = r.Name,
+            Kcal100g = r.Kcal100g
         }).ToListAsync();
         return Results.Ok(ingredients);
     }

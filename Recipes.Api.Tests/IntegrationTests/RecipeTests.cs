@@ -55,11 +55,11 @@ public class RecipeTests
 
         using var client = factory.CreateClient();
 
-        var recipes = await client.GetFromJsonAsync<List<RecipeDto>>("/recipes");
+        var recipes = await client.GetFromJsonAsync<PagedResponseDto<RecipeDto>>("/recipes");
 
         Assert.NotNull(recipes);
-        Assert.Single(recipes);
-        Assert.Equal(0, recipes[0].Kcal);
+        Assert.Single(recipes.Items);
+        Assert.Equal(0, recipes.Items[0].Kcal);
     }
     [Fact]
     public async Task GetRecipes_IngredientNoKcal_HasZeroKcal()
@@ -93,11 +93,11 @@ public class RecipeTests
 
         using var client = factory.CreateClient();
 
-        var recipes = await client.GetFromJsonAsync<List<RecipeDto>>("/recipes");
+        var recipes = await client.GetFromJsonAsync<PagedResponseDto<RecipeDto>>("/recipes");
 
         Assert.NotNull(recipes);
-        Assert.Single(recipes);
-        Assert.Equal(0, recipes[0].Kcal);
+        Assert.Single(recipes.Items);
+        Assert.Equal(0, recipes.Items[0].Kcal);
     }
     [Fact]
     public async Task GetRecipes_IngredientHasKcal_HasSumKcal()
@@ -132,10 +132,10 @@ public class RecipeTests
 
         using var client = factory.CreateClient();
 
-        var recipes = await client.GetFromJsonAsync<List<RecipeDto>>("/recipes");
+        var recipes = await client.GetFromJsonAsync<PagedResponseDto<RecipeDto>>("/recipes");
 
         Assert.NotNull(recipes);
-        Assert.Single(recipes);
-        Assert.Equal(100, recipes[0].Kcal);
+        Assert.Single(recipes.Items);
+        Assert.Equal(100, recipes.Items[0].Kcal);
     }
 }
