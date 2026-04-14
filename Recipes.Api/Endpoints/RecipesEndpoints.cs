@@ -31,9 +31,9 @@ public static class RecipesEndpoints
         if (reqValidation is not null) return reqValidation;
  
         var query = db.Recipes.AsQueryable();
-        if (req.searchString != null)
+        if (req.SearchString != null)
         {
-           query = query.Where(r => r.Name.ToLower().Contains(req.searchString));
+           query = query.Where(r => r.Name.ToLower().Contains(req.SearchString));
         }
         var totalCount = await db.Recipes.CountAsync();
 

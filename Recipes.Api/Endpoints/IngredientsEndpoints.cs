@@ -1,5 +1,3 @@
-using System.Reflection.Metadata;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Recipes.Api.Data;
 using Recipes.Api.Dto;
@@ -18,15 +16,39 @@ public static class IngredientsEndpoints
         app.MapPut("/ingredients/{id:guid}", UpdateIngredient);
         app.MapDelete("/ingredients/{id:guid}", DeleteIngredient);
     }
-    static async Task<IResult> GetIngredients(AppDbContext db)
+    static async Task<IResult> GetIngredients([AsParameters] GetIngredientsQueryDto req, AppDbContext db)
     {
-        var ingredients = await db.Ingredients.Select(r => new IngredientDto()
+
+        var page = req.Page ?? 1;
+        var pageSize = req.PageSize ?? 20;
+        
+        var reqValidation = req.Validate();
+        if (reqValidation is not null) return reqValidation;
+
+        var totalCount = await db.Ingredients.CountAsync();
+
+        var query = db.Ingredients.AsQueryable();
+        if (req.SearchString != null)
+        {
+           query = query.Where(i => i.Name.Contains(req.SearchString.ToLowerInvariant()));
+        }
+        var ingredients = await query.Skip((page-1)*pageSize).Take(pageSize).Select(r => new IngredientDto()
         {
             Id = r.Id,
             Name = r.Name,
             Kcal100g = r.Kcal100g
         }).ToListAsync();
-        return Results.Ok(ingredients);
+        return Results.Ok(new PagedResponseDto<IngredientDto>
+        {
+            Items = ingredients,
+            Metadata = new PageMetadataDto
+            {
+                Page = page,
+                PageSize = pageSize,
+                TotalCount = totalCount,
+                TotalPages = (int)Math.Ceiling((double)totalCount/pageSize)
+            }   
+        });
     }
     static async Task<IResult> GetIngredient(Guid id,AppDbContext db)
     {

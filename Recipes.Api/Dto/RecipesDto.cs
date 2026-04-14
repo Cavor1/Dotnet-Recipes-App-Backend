@@ -1,6 +1,4 @@
 namespace Recipes.Api.Dto;
-
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 public class RecipeDto
@@ -43,7 +41,7 @@ public class CreateRecipeIngredientDto
 
 public class GetRecipesQueryDto
 {
-    public string? searchString {get;set;}
+    public string? SearchString {get;set;}
 
     [Range(1,int.MaxValue)]
     public int? Page {get;set;}
