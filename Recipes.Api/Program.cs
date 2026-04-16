@@ -34,4 +34,5 @@ app.MapGet("/", () => "hi");
 app.MapRecipesEndpoints();
 app.MapIngredientsEndpoints();
 app.MapMealsEndpoints();
+app.MapStatsEndpoints();
 app.Run();

@@ -9,7 +9,7 @@ namespace Recipes.Api.Endpoints;
 
 public static class StatsEndpoints
 {
-    public static void MapIngredientsEndpoints(this WebApplication app)
+    public static void MapStatsEndpoints(this WebApplication app)
     {
         app.MapGet("/stats", GetStats);
         app.MapGet("/stats/today", GetTodayStats);
@@ -40,7 +40,7 @@ public static class StatsEndpoints
 
         var startUtc = TimeZoneInfo.ConvertTimeToUtc(startOfDayLocal, tz);
         var endUtc = TimeZoneInfo.ConvertTimeToUtc(endOfDayLocal, tz);
-
+ 
         query = query.Where(m =>m.EatenTime != null && m.EatenTime >= startUtc && m.EatenTime < endUtc);
 
         var kcal = await query

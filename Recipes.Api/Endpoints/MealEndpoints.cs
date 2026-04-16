@@ -3,6 +3,7 @@ using Recipes.Api.Data;
 using Recipes.Api.Dto;
 using Recipes.Api.Entities;
 using Recipes.Api.Validation;
+using Recipes.Api.Services;
 
 namespace Recipes.Api.Endpoints;
 
@@ -110,52 +111,15 @@ public static class MealEndpoints
                 Ingredients = duplicateNames
             });
         }
-
-        var meal = new Meal()
+        var result = await MealService.CreateMealService(req,db);
+        if (result.Value != null)
         {
-            Id = Guid.NewGuid(),
-            Name= req.Name,
-            RecipeId = req.RecipeId
-        };
-
-        var existingIngredients = await db.Ingredients
-            .Where(ei => reqIngredients
-                .Select(ri => ri.Name)
-                .Contains(ei.Name)) //list of reqIngredients.Name contains ei.Name
-            .ToDictionaryAsync(i => i.Name);
-
-        foreach (var reqIngredient in reqIngredients)
-        {
-
-            var mealIngredient = new MealIngredient()
-            {
-                MealId = meal.Id,
-                Gram = reqIngredient.Gram
-            };
-
-            if (!existingIngredients.ContainsKey(reqIngredient.Name))
-            {
-                var newIngredient = new Ingredient()
-                {
-                    Id = Guid.NewGuid(),
-                    Name = reqIngredient.Name,
-                    Kcal100g = reqIngredient.Kcal100g
-                };
-                db.Ingredients.Add(newIngredient);
-                mealIngredient.IngredientId = newIngredient.Id;
-            }
-            else
-            {
-                mealIngredient.IngredientId = existingIngredients[reqIngredient.Name].Id;
-            }
-            db.MealIngredients.Add(mealIngredient);
-
+            return Results.Created($"/recipes/{result.Value.Id}", new {Id = result.Value.Id});
         }
-
-        db.Meals.Add(meal);
-        await db.SaveChangesAsync();
-
-        return Results.Created($"/recipes/{meal.Id}", new {Id = meal.Id});//[TODO] can retturn better response
+        else
+        {
+            return Results.BadRequest(result.Error);
+        }
     }
     static async Task<IResult> DeleteMeal(Guid id,AppDbContext db)
     {
@@ -209,52 +173,15 @@ public static class MealEndpoints
             });
         }
 
-        meal.Name= req.Name;
-        meal.RecipeId = req.RecipeId;
-
-
-        var existingIngredients = await db.Ingredients
-            .Where(ei => reqIngredients
-                .Select(ri => ri.Name)
-                .Contains(ei.Name)) //list of reqIngredients.Name contains ei.Name
-            .ToDictionaryAsync(i => i.Name);
-
-
-        //delete mealingredients 
-        await db.MealIngredients.Where(mi => mi.MealId == id).ExecuteDeleteAsync();
-
-        //add ingredients again
-        foreach (var reqIngredient in reqIngredients)
+        var result = await MealService.UpdateMealService(meal,req,db);
+        if (result.Value != null)
         {
-
-            var mealIngredient = new MealIngredient()
-            {
-                MealId = meal.Id,
-                Gram = reqIngredient.Gram
-            };
-
-            if (!existingIngredients.ContainsKey(reqIngredient.Name))
-            {
-                var newIngredient = new Ingredient()
-                {
-                    Id = Guid.NewGuid(),
-                    Name = reqIngredient.Name,
-                    Kcal100g = reqIngredient.Kcal100g
-                };
-                db.Ingredients.Add(newIngredient);
-                mealIngredient.IngredientId = newIngredient.Id;
-            }
-            else
-            {
-                mealIngredient.IngredientId = existingIngredients[reqIngredient.Name].Id;
-            }
-            db.MealIngredients.Add(mealIngredient);
-
+            return Results.Created($"/recipes/{result.Value.Id}", new {Id = result.Value.Id});
         }
-
-        await db.SaveChangesAsync();
-
-        return Results.Created($"/recipes/{meal.Id}", new {Id = meal.Id});//[TODO] can retturn better response
+        else
+        {
+            return Results.BadRequest(result.Error);
+        }
     }
     static async Task<IResult> EatMeal(Guid id, AppDbContext db)
     {
@@ -279,6 +206,20 @@ public static class MealEndpoints
         await db.SaveChangesAsync();
         return Results.Ok();
     }
+    static async Task<IResult> CreateMultipleMeals(List<CreateMealDto> req, AppDbContext db)
+    {
+        foreach (var ri in req)
+        {
+            var reqValidation = ri.Validate();
+            if (reqValidation is not null) return reqValidation;
 
+            foreach (var rj in ri.MealIngredients)
+            {
+                var rjValidation = rj.Validate();
+                if (rjValidation is not null) return rjValidation;
+            }
+        }
+        return Results.Created();
+    }
 }
 
