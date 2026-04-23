@@ -22,6 +22,12 @@ public class CreateMealDto
     [Required]
     public List<CreateMealIngredientDto> MealIngredients {get;set;} = new();
 }
+
+public class CreateMultipleMealDto : CreateMealDto
+{
+    public int? Number {get;set;} 
+}
+
 public class CreateMealIngredientDto
 {
     [Required]

@@ -18,6 +18,7 @@ public static class MealEndpoints
         app.MapDelete("/meals/{id:guid}", DeleteMeal);
         app.MapPatch("/meals/{id:guid}/eat",EatMeal);
         app.MapPatch("/meals/{id:guid}/undoeat",UndoEatMeal);
+        app.MapPost("/meals/multiple", CreateMultipleMeals);
     }
     static async Task<IResult> GetMeals([AsParameters] GetMealQueryDto q, AppDbContext db) //query params
     {
@@ -114,7 +115,7 @@ public static class MealEndpoints
         var result = await MealService.CreateMealService(req,db);
         if (result.Value != null)
         {
-            return Results.Created($"/recipes/{result.Value.Id}", new {Id = result.Value.Id});
+            return Results.Created($"/recipes/{result.Value[0].Id}", new {Id = result.Value[0].Id});
         }
         else
         {
@@ -206,20 +207,53 @@ public static class MealEndpoints
         await db.SaveChangesAsync();
         return Results.Ok();
     }
-    static async Task<IResult> CreateMultipleMeals(List<CreateMealDto> req, AppDbContext db)
+    static async Task<IResult> CreateMultipleMeals(CreateMultipleMealDto req, AppDbContext db)
     {
-        foreach (var ri in req)
-        {
-            var reqValidation = ri.Validate();
-            if (reqValidation is not null) return reqValidation;
+        var reqValidation = req.Validate();
+        if (reqValidation is not null) return reqValidation;
 
-            foreach (var rj in ri.MealIngredients)
-            {
-                var rjValidation = rj.Validate();
-                if (rjValidation is not null) return rjValidation;
-            }
+        foreach (var rj in req.MealIngredients)
+        {
+            var rjValidation = rj.Validate();
+            if (rjValidation is not null) return rjValidation;
         }
-        return Results.Created();
+        var createdMeals = new List<Meal>();
+            
+        var riIngredients = req.MealIngredients.Select(r => new
+        {
+            Name = r.Name.Trim().ToLowerInvariant(),
+            Gram = r.Gram,
+            Kcal100g = r.Kcal100g
+        }).ToList();
+
+        //check for duplicates, is there are, bad request
+        var duplicateNames = riIngredients
+            .GroupBy(x => x.Name)
+            .Where(g => g.Count() > 1)
+            .Select(g => g.Key)
+            .ToList();
+
+        if (duplicateNames.Count > 0)
+        {
+            return Results.BadRequest(new
+            {
+                Error = "Duplicate ingredient names in request",
+                Ingredients = duplicateNames
+            });
+        }
+        var result = await MealService.CreateMealService(req,db,req.Number ?? 1);
+        if (result.Value != null)
+        {
+            return Results.Ok(result.Value.Select(m => new
+            {
+                Id = m.Id
+            }));
+        }
+        else
+        {
+            return Results.BadRequest(result.Error);
+        }
     }
+        // return Results.Created($"/recipes/{result.Value.Id}", new {Id = result.Value.Id});
 }
 

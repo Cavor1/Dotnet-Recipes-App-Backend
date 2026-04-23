@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Recipes.Api.Data;
 using Recipes.Api.Dto;
@@ -17,23 +16,27 @@ public class MealService
         await db.MealIngredients.Where(mi => mi.MealId == meal.Id).ExecuteDeleteAsync();
 
         var result = await FillMealIngredients(meal,req,db);
-        return result;
+        return new Result<Meal> {Value = meal};
     }
-    public static async Task<Result<Meal>> CreateMealService(CreateMealDto req, AppDbContext db)
+    public static async Task<Result<List<Meal>>> CreateMealService(CreateMealDto req, AppDbContext db, int n = 1)
     {
-
-        var meal = new Meal()
+        var mealList = new List<Meal>();
+        for (int i = 0; i < n; i++)
         {
-            Id = Guid.NewGuid(),
-            Name= req.Name,
-            RecipeId = req.RecipeId
-        };
-        db.Meals.Add(meal);
+            var meal = new Meal()
+            {
+                Id = Guid.NewGuid(),
+                Name= req.Name,
+                RecipeId = req.RecipeId
+            };
+            mealList.Add(meal);
+            db.Meals.Add(meal);
+            await FillMealIngredients(meal,req,db);
+        }
         await db.SaveChangesAsync();
-        var result = await FillMealIngredients(meal,req,db);
-        return result;
+        return new Result<List<Meal>> {Value = mealList};
     }
-    private static async Task<Result<Meal>> FillMealIngredients(Meal meal, CreateMealDto req, AppDbContext db)
+    private static async Task<Meal> FillMealIngredients(Meal meal, CreateMealDto req, AppDbContext db)
     {
 
         var reqIngredients = req.MealIngredients.Select(r => new
@@ -78,7 +81,7 @@ public class MealService
         }
 
         await db.SaveChangesAsync();
-        return new Result<Meal> {Value = meal};
+        return meal;
     }
 
 

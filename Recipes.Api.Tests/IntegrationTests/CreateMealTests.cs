@@ -202,4 +202,37 @@ public class CreateMealTests
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
     }    
+
+    [Fact]
+    public async Task CreateMultipleMeals_SavesMealsInDatabase()
+    {
+        using var factory = new CustomWebApplicationFactory();
+        using var client = factory.CreateClient();
+
+        var request = new CreateMultipleMealDto
+        {
+            Name = "Breakfast",
+            MealIngredients = new List<CreateMealIngredientDto>
+            {
+                new CreateMealIngredientDto
+                {
+                    Name = "Bread",
+                    Gram = 100,
+                    Kcal100g = 250
+                }
+            },
+            Number = 2
+
+        };
+
+        var response = await client.PostAsJsonAsync("/meals/multiple", request);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        Assert.Equal(2, db.Meals.Count());
+
+    }
 }
