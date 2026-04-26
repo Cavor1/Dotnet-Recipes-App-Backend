@@ -1,9 +1,12 @@
 **/bin/
 **/obj/
+**/'bin\Debug'/
 **/.vs/
 **/.vscode/
 **/TestResults/
 .git
 .gitignore
+.env
+.env.*
 Dockerfile
 README.md

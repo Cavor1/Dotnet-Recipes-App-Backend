@@ -1,4 +1,4 @@
-# build stage
+# build
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
@@ -10,11 +10,10 @@ RUN dotnet restore Recipes.Api/Recipes.Api.csproj
 COPY . .
 RUN dotnet publish Recipes.Api/Recipes.Api.csproj -c Release -o /app/publish /p:UseAppHost=false
 
-# runtime stage
+# runtime
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 
-# ASP.NET container images now default to port 8080 rather than 80
 ENV ASPNETCORE_HTTP_PORTS=8080
 
 COPY --from=build /app/publish .
