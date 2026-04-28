@@ -10,10 +10,16 @@ public static class IngredientsEndpoints
 {
     public static void MapIngredientsEndpoints(this WebApplication app)
     {
-        app.MapGet("/ingredients", GetIngredients);
-        app.MapGet("/ingredients/{id:guid}", GetIngredient);
-        app.MapPost("/ingredients", CreateIngredient);
-        app.MapPut("/ingredients/{id:guid}", UpdateIngredient);
+        app.MapGet("/ingredients", GetIngredients)
+            .Produces<PagedResponseDto<IngredientDto>>(StatusCodes.Status200OK)
+            .ProducesValidationProblem();
+        app.MapGet("/ingredients/{id:guid}", GetIngredient)
+            .Produces<PagedResponseDto<IngredientDto>>(StatusCodes.Status200OK);
+        app.MapPost("/ingredients", CreateIngredient)
+            .Produces<PagedResponseDto<IngredientDto>>(StatusCodes.Status200OK);
+        app.MapPut("/ingredients/{id:guid}", UpdateIngredient)
+            .Produces<PagedResponseDto<IngredientDto>>(StatusCodes.Status200OK);
+
         app.MapDelete("/ingredients/{id:guid}", DeleteIngredient);
     }
     static async Task<IResult> GetIngredients([AsParameters] GetIngredientsQueryDto req, AppDbContext db)
@@ -122,18 +128,14 @@ public static class IngredientsEndpoints
         
         if (ingredient is null) return Results.NotFound();
 
-        var isUsed = await db.RecipeIngredients
-    .AnyAsync(ri => ri.IngredientId == id);
+        var isUsed = await db.RecipeIngredients.AnyAsync(ri => ri.IngredientId == id);
 
         if(isUsed) return Results.Conflict(new
         {
-            message = "INgredient is used by recipe"
+            message = "Ingredient is used by recipe"
         });
-
         db.Ingredients.Remove(ingredient);
-
         await db.SaveChangesAsync();
-
         return Results.Ok();   
     }
 }
