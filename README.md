@@ -6,7 +6,7 @@ Uses PostgreSQL as database.
 ### Quick start
 ```sh
 git clone git@github.com:Cavor1/Dotnet-Recipes-API.git
-cd Dotnet-Recipes-API.git 
+cd Dotnet-Recipes-API 
 cp .env.example .env
 docker compose up --build
 ```
