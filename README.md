@@ -10,3 +10,29 @@ cd Dotnet-Recipes-API
 cp .env.example .env
 docker compose up --build
 ```
+
+### Endpoints
+#### IngredientsEndpoints
+GET /ingredients  
+POST /ingredients  
+GET /ingredients/{id}  
+PUT /ingredients/{id}  
+DELETE /ingredients/{id}   
+#### MealEndpoints
+GET /meals  
+POST /meals  
+GET /meals/{id}  
+PUT /meals/{id}  
+DELETE /meals/{id}  
+PATCH /meals/{id}/eat  
+PATCH /meals/{id}/undoeat  
+POST /meals/multiple  
+#### RecipesEndpoints
+GET /recipes  
+POST /recipes  
+GET /recipes/{id}  
+PUT /recipes/{id}  
+DELETE /recipes/{id}  
+#### StatsEndpoints
+GET /stats  
+GET /stats/today  
