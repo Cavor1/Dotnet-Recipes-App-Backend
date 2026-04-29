@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Recipes.Api.Data;
 using Recipes.Api.Dto;
@@ -13,14 +14,24 @@ public static class IngredientsEndpoints
         app.MapGet("/ingredients", GetIngredients)
             .Produces<PagedResponseDto<IngredientDto>>(StatusCodes.Status200OK)
             .ProducesValidationProblem();
-        app.MapGet("/ingredients/{id:guid}", GetIngredient)
-            .Produces<PagedResponseDto<IngredientDto>>(StatusCodes.Status200OK);
-        app.MapPost("/ingredients", CreateIngredient)
-            .Produces<PagedResponseDto<IngredientDto>>(StatusCodes.Status200OK);
-        app.MapPut("/ingredients/{id:guid}", UpdateIngredient)
-            .Produces<PagedResponseDto<IngredientDto>>(StatusCodes.Status200OK);
 
-        app.MapDelete("/ingredients/{id:guid}", DeleteIngredient);
+        app.MapGet("/ingredients/{id:guid}", GetIngredient)
+            .Produces(404)
+            .Produces<IngredientDto>(StatusCodes.Status200OK);
+
+        app.MapPost("/ingredients", CreateIngredient)
+            .ProducesValidationProblem()
+            .Produces(409)
+            .Produces(201);
+
+        app.MapPut("/ingredients/{id:guid}", UpdateIngredient)
+            .Produces(409)
+            .ProducesValidationProblem();
+
+        app.MapDelete("/ingredients/{id:guid}", DeleteIngredient)
+            .Produces(409)
+            .Produces(200)
+            .Produces(404);
     }
     static async Task<IResult> GetIngredients([AsParameters] GetIngredientsQueryDto req, AppDbContext db)
     {
@@ -69,7 +80,12 @@ public static class IngredientsEndpoints
         
         return ingredient is null
             ? Results.NotFound()
-            : Results.Ok(ingredient);
+            : Results.Ok(new IngredientDto
+            {
+                Id = ingredient.Id,
+                Name = ingredient.Name,
+                Kcal100g = ingredient.Kcal100g
+            });
     }
 
     static async Task<IResult> CreateIngredient(CreateIngredientDto req, AppDbContext db)
@@ -96,7 +112,7 @@ public static class IngredientsEndpoints
         }
         catch(DbUpdateException)
         {
-            return Results.BadRequest();
+            return Results.Conflict("Name already exists");
         }
             
         return Results.Created($"/ingredients/{ingredient.Id}", new {Id = ingredient.Id});
