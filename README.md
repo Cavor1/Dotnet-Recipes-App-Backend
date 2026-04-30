@@ -1,17 +1,33 @@
-### Recipes API
+## Recipes API
 
 ASP.NET Core API for managing recipes, meals, and calorie tracking.  
-Uses PostgreSQL as database.
 
-### Quick start
+## Tech Stack
+- ASP.NET Core (.NET 10)
+- Entity Framework Core
+- PostgreSQL
+- Docker
+- Docker Compose
+## Quick start
+
+#### Linux
+1. Clone Repository
 ```sh
 git clone git@github.com:Cavor1/Dotnet-Recipes-API.git
 cd Dotnet-Recipes-API 
+```
+2. Create .env file
+```sh
 cp .env.example .env
+```
+3. Run with docker compose
+```sh
 docker compose up --build
 ```
 
-### Endpoints
+## Endpoints
+#### Documentation
+/swagger
 #### IngredientsEndpoints
 GET /ingredients  
 POST /ingredients  
