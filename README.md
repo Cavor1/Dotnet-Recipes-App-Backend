@@ -1,6 +1,7 @@
-## Recipes API
+## Recipes App Backend
 
-ASP.NET Core API for managing recipes, meals, and calorie tracking.  
+Backend exposes REST API for creating, recipes, meals, and calorie tracking.  
+Interactive API documentation is available through Swagger when running the app locally.
 
 ## Tech Stack
 - ASP.NET Core (.NET 10)
