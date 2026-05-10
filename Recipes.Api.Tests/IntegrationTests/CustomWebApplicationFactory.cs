@@ -46,7 +46,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             db.Database.EnsureCreated();
         });
 
-        builder.UseEnvironment("Development");
+        builder.UseEnvironment("Testing");
     }
 
     protected override void Dispose(bool disposing)
