@@ -1,6 +1,9 @@
 ## Recipes App Backend
 
-Backend exposes REST API for creating, recipes, meals, and calorie tracking.  
+Backend application exposing a REST API for managing recipes, meals, ingredients, and calorie tracking.
+
+The app can be run locally using Docker, which starts the API and database in a reproducible development environment. The project also includes integration tests for verifying API endpoints and database-related behavior.
+
 Interactive API documentation is available through Swagger when running the app locally.
 
 ## Tech Stack
@@ -24,6 +27,12 @@ cp .env.example .env
 3. Run with docker compose
 ```sh
 docker compose up --build
+```
+
+
+## Tests
+```sh
+dotnet test
 ```
 
 ## Endpoints
